@@ -31,25 +31,26 @@ seqkit subseq  -r 5771:8341 HIV-1.fasta > env.fasta
 ![alt text](https://github.com/AlfredUg/super-infection/blob/main/workflow.png?raw=true)
 
 
-The data being analysed was generated using the 'Half genome strategy'. As such, we expect a signifcant number of sequences of length 4,500 and above. So let us use `seqkit` to pick sequences of length 4,500 and above. 
+The data being analysed was generated using the **half genome strategy**. As such, we expect a signifcant number of sequences of length 4,500 and above. So let us use `seqkit` to pick sequences of length 4,500 and above. 
 
 ```bash
 for i in $(ls barcode*.fasta); do echo $i; bn=$(basename $i '.fasta'); echo $bn; seqkit seq -g -m 4500 $i > ${bn}_above_4500.fasta;  done &
 ```
 
-Since we are interesting in picking up envelope sequences from these data, we need to have an idea of the start and end coordinates of the envelope region in the sequenced data. To get this information we use blastn to make a pairwise alignment. Blast the sequences with the env reference sequence
+Since we are interested in picking up envelope sequences from these data, we need to have an idea of the `start` and `end` coordinates of the envelope region in the sequenced data. To get this information we use `blastn` to make a pairwise alignment, with a tabular output. 
 
 ```bash
 for i in $(ls *_above_4500.fasta); do echo $i; bn=$(basename $i '.fasta'); echo $bn; blastn -subject env.fasta -query $i -outfmt 6 > ${bn}_blast.tsv ;  done & 
 ```
 
-Pick sequences with length of the start is below `50` and end equal to `2571`
+
+The tabular output of `blastn` has information on the `start` and `end` positions of the `query` and `reference` sequence. Specifically, column 9 and column 10 are coordinates start of alignment in reference and end of alignment in reference respectively. So we want to pick sequences in our query set which align to a reasonably good portion of the envelope reference. In this case, we pick sequences with a reference start position of below `50` and reference end position equal to `2571` (these are reached after inspecting the tabular output above).
 
 ```bash
 for i in $(ls *blast.tsv); do echo $i; bn=$(basename $i '_above_4500_blast.tsv'); echo $bn; awk -F"\t"  '{print}' $i | awk -F"\t" '$10==2571 {print}' | awk -F"\t" '$9<50 {print}' > ${bn}_nfl_env.tsv;  done &
 ```
 
-Rename headers to match blastn 
+Since we need to use the query names in the blast output to extract matching sequences from the FASTA sequences, it is important that the names in the two files match. We use `awk` to change the sequence names (header line) to a shorter version which is identical to that in the `blastn` output.
 
 ```bash
 for i in $(ls *_above_4500.fasta); do echo $i; bn=$(basename $i '_above_4500.fasta'); echo $bn; awk '/^>/{print $1;next}{print}' $i > ${bn}_renamed.fasta; done & 
