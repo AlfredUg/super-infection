@@ -65,8 +65,10 @@ Make a list of IDs that contain the region of interest as obtained above
 awk -F"\t" '{print $1}' barcode01_nfl_env.tsv > seqIDs.txt
 ```
 
+From the filtered `blastn` output file, pick only three columns; the sequence id (column 1), the start of alignment in query sequence (column 7) and end of alignment in query sequence (column 8).
+
 ```bash
-awk '{print $1 "\t" $7 "\t" $8}' barcode01_nfl_env.tsv > check.tsv
+awk '{print $1 "\t" $7 "\t" $8}' barcode01_nfl_env.tsv > env-coords.tsv
 ```
 
 Extract these sets from the bigger renamed header faster file
@@ -75,16 +77,17 @@ Extract these sets from the bigger renamed header faster file
 seqkit grep -n -f seqIDs.txt barcode01_renamed.fasta > barcode01_nfl.fasta
 ```
 
-Make a single file from these multi-fast file
+In order to extract the envelope sequences, `seqkit` needs a single sequence per FASTA file. What we do now, is to split all the data so that we have a single sequence per FASTA file. We write a simple script for this purpose and name it `split.sh`. 
 
 ```bash
 bash split.sh barcode01_nfl.fasta
 ```
+The script will create single sequence FASTA files in a directory called `splitted` inside the current working directly.
 
 Using the information from blast pick the env sequences from the single fast files
 
 ```bash
-while read seqid start end; do echo $seqid ; ls -lh splitted/$seqid.fa; seqkit subseq  -r $start:$end splitted/${seqid}.fa > splitted/${seqid}_env.fa; done < check.tsv
+while read seqid start end; do echo $seqid ; ls -lh splitted/$seqid.fa; seqkit subseq  -r $start:$end splitted/${seqid}.fa > splitted/${seqid}_env.fa; done < env-coords.tsv
 ```
 
 ```bash
