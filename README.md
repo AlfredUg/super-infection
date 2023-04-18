@@ -43,8 +43,7 @@ Since we are interested in picking up envelope sequences from these data, we nee
 for i in $(ls *_above_4500.fasta); do echo $i; bn=$(basename $i '.fasta'); echo $bn; blastn -subject env.fasta -query $i -outfmt 6 > ${bn}_blast.tsv ;  done & 
 ```
 
-
-The tabular output of `blastn` has information on the `start` and `end` positions of the `query` and `reference` sequence. Specifically, column 9 and column 10 are coordinates start of alignment in reference and end of alignment in reference respectively. So we want to pick sequences in our query set which align to a reasonably good portion of the envelope reference. In this case, we pick sequences with a reference start position of below `50` and reference end position equal to `2571` (these are reached after inspecting the tabular output above).
+The tabular output of `blastn` has information about the `start` and `end` positions of the `query` and `reference` sequence. Specifically, column 9 and column 10 are coordinates of the start of alignment and end of alignment in reference respectively. So we want to pick query sequences which align to a reasonably good portion of the envelope reference. In this case, we pick alignments with a reference start position of below `50` and a reference end position of `2571` (these are reached after inspecting the tabular output above).
 
 ```bash
 for i in $(ls *blast.tsv); do echo $i; bn=$(basename $i '_above_4500_blast.tsv'); echo $bn; awk -F"\t"  '{print}' $i | awk -F"\t" '$10==2571 {print}' | awk -F"\t" '$9<50 {print}' > ${bn}_nfl_env.tsv;  done &
