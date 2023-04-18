@@ -2,7 +2,7 @@
 
 NGS-based HIV-1 super infection analysis
 
-![alt text](https://github.com/AlfredUg/super-infection/blob/main/images/HIVseqDB-schema-Super-infection.drawio.pdf?raw=true)
+![alt text](https://github.com/AlfredUg/super-infection/blob/main/workflow.png?raw=true)
 
 Pick sequences of length 45k and above
 
