@@ -16,14 +16,14 @@ All these tools are readily available as CLI utilities on `conda` with the excep
  
 ## Obtaining reference sequence(s)
 
-Before we go any further, we need some reference sequences which can be obtained from NCBI Refseq. Here we use complete genome of HIV-1, accession number NC_001802.1 as the main reference genome with particular interest in the envelope region. 
+Before we go any further, we need some reference sequences which can be obtained from NCBI Refseq. Here we use complete genome of HIV-1, accession number `NC_001802.1` as the main reference genome with particular interest in the envelope region. 
 
-+ First, we download the HIV-1 genome from NCBI nuceotide database (https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=fasta&to=9181) and save it in FASTA format.
++ First, we download the HIV-1 genome from NCBI nuceotide database (https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=fasta&to=9181) and save it in FASTA format as `HIV-1.fasta`.
 + Secondly, we inspect the genome graph of HIV-1 [https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=graph](https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=graph) to identify the exact location/coordinates of the env gene on that particular reference genome. We note that the env gene spans the region `5,771..8,341` covering a total of `2,571` nucleotides. We use `seqkit` to pick that up and save as `env.fasta`.
 ```bash
 seqkit subseq  -r 5771:8341 HIV-1.fasta > env.fasta
 ```
-+ For any particular reference sequences that we need to add to the phylogenies later on, we can get from Los Alamos HIV database or Genbank as well. But for, that is all we need.
++ For any particular reference sequences that we need to add to the phylogenies later on, we can get from Los Alamos HIV database or Genbank as well. But for now, that is all we need.
  
 
 ## The analysis workflow
@@ -31,13 +31,13 @@ seqkit subseq  -r 5771:8341 HIV-1.fasta > env.fasta
 ![alt text](https://github.com/AlfredUg/super-infection/blob/main/workflow.png?raw=true)
 
 
-Pick sequences of length 45k and above
+The data being analysed was generated using the 'Half genome strategy'. As such, we expect a signifcant number of sequences of length 4,500 and above. So let us use `seqkit` to pick sequences of length 4,500 and above. 
 
 ```bash
 for i in $(ls barcode*.fasta); do echo $i; bn=$(basename $i '.fasta'); echo $bn; seqkit seq -g -m 4500 $i > ${bn}_above_4500.fasta;  done &
 ```
 
-Blast with the env reference sequence
+Since we are interesting in picking up envelope sequences from these data, we need to have an idea of the start and end coordinates of the envelope region in the sequenced data. To get this information we use blastn to make a pairwise alignment. Blast the sequences with the env reference sequence
 
 ```bash
 for i in $(ls *_above_4500.fasta); do echo $i; bn=$(basename $i '.fasta'); echo $bn; blastn -subject env.fasta -query $i -outfmt 6 > ${bn}_blast.tsv ;  done & 
