@@ -28,6 +28,9 @@ Rename headers to match blastn
 for i in $(ls *_above_4500.fasta); do echo $i; bn=$(basename $i '_above_4500.fasta'); echo $bn; awk '/^>/{print $1;next}{print}' $i > ${bn}_renamed.fasta; done & 
 ```
 
+Before we proceed, make a seperate directory for each participant ID and move all the corresponsding FASTA files to that directory.
+For ach of the participant IDs, do the following.
+
 Make a list of IDs that contain the region of interest as obtained above
 
 ```bash
@@ -58,4 +61,29 @@ while read seqid start end; do echo $seqid ; ls -lh splitted/$seqid.fa; seqkit s
 
 ```bash
 cat splitted/*_env.fa > barcode01_nfl_env.fasta
+```
+
+
+Phylogenetic analysis
+
+```bash
+for i in `ls *.fasta`; do  awk '/>/{sub(">",">"FILENAME"_")}1' $i; done > combined.fa
+```
+
+Create a multiple sequence alignment
+
+```bash
+mafft combined.fa > combined-aln.fa
+```
+
+Create NJ phylogenetic tree
+
+```bash
+fasttree -nt combined-aln.fa > combined.nwk
+```
+
+Visualise the tree using any tree visualiser, here we are using Figtree for the start. Note, that we need an annotation file, lets create one quickly.
+
+```bash
+grep ">" combined.fa | awk -F_ '{print $0"\t"$1}' | sed 's/>//g' > annot.txt
 ```
