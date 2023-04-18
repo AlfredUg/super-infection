@@ -1,8 +1,35 @@
-# super-infection
+# NGS-based HIV-1 super infection analysis
 
-NGS-based HIV-1 super infection analysis
+Here is a comprehensive overview for analysis of long read HIV-1 data from the MINION to identify super-infection and extracting regions of interest. We assume that the data has already been basecalled and demultiplexed using guppy. In otherwords, we expect a directory for each barcode with corresponding FASTQ files.
+
+## Required commandline tools
+
++ [fq2fa]()
++ [seqkit]()
++ [blastn]()
++ [mafft]()
++ [fasttree]()
++ [figtree]()
++ [comet]()
+ 
+All these tools are readily available as CLI utilities on `conda` with the exception of `comet`.
+ 
+## Obtaining reference sequence(s)
+
+Before we go any further, we need some reference sequences which can be obtained from NCBI Refseq. Here we use complete genome of HIV-1, accession number NC_001802.1 as the main reference genome with particular interest in the envelope region. 
+
++ First, we download the HIV-1 genome from NCBI nuceotide database (https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=fasta&to=9181) and save it in FASTA format.
++ Secondly, we inspect the genome graph of HIV-1 [https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=graph](https://www.ncbi.nlm.nih.gov/nuccore/NC_001802.1?report=graph) to identify the exact location/coordinates of the env gene on that particular reference genome. We note that the env gene spans the region `5,771..8,341` covering a total of `2,571` nucleotides. We use `seqkit` to pick that up and save as `env.fasta`.
+```bash
+seqkit subseq  -r 5771:8341 HIV-1.fasta > env.fasta
+```
++ For any particular reference sequences that we need to add to the phylogenies later on, we can get from Los Alamos HIV database or Genbank as well. But for, that is all we need.
+ 
+
+## The analysis workflow
 
 ![alt text](https://github.com/AlfredUg/super-infection/blob/main/workflow.png?raw=true)
+
 
 Pick sequences of length 45k and above
 
